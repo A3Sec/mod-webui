@@ -20,7 +20,8 @@
 # along with Shinken.  If not, see <http://www.gnu.org/licenses/>.
 
 import time
-
+import os, sys
+from config_parser import config_parser
 from shinken.log import logger
 
 ### Will be populated by the UI with it's own value
@@ -29,8 +30,6 @@ app = None
 # Get plugin's parameters from configuration file
 params = {}
 
-import os,sys
-from config_parser import config_parser
 plugin_name = os.path.splitext(os.path.basename(__file__))[0]
 try:
     currentdir = os.path.dirname(os.path.realpath(__file__))
@@ -96,6 +95,7 @@ def _valid_coords(hostname, lat, lng):
 
     return True
 
+
 def _get_coords(host):
     lat = host.customs.get('_LOC_LAT', host.customs.get('_LAT'))
     lng = host.customs.get('_LOC_LNG', host.customs.get('_LONG'))
@@ -104,12 +104,10 @@ def _get_coords(host):
         lng = params['default_Lng'] if not lng else lng
     return (lat, lng)
 
-# Our page. If the user call /worldmap
-def get_page():
-    user = checkauth()    
 
-    # We are looking for hosts that got valid GPS coordinates,
-    # and we just give them to the template to print them.
+# We are looking for hosts that got valid GPS coordinates,
+# and we just give them to the template to print them.
+def __get_valid_hosts():
     valid_hosts = []
     for h in app.datamgr.get_hosts():
         (_lat, _lng) = _get_coords(h)
@@ -118,7 +116,14 @@ def get_page():
             h.customs['_LOC_LNG'] = _lng
             valid_hosts.append(h)
 
-    # So now we can just send the valid hosts to the template
+    return valid_hosts
+
+
+def get_page():
+    user = checkauth()
+
+    valid_hosts = __get_valid_hosts()
+
     return {
         'app': app,
         'user': user,
@@ -135,15 +140,7 @@ def worldmap_widget():
 
     options = {}
 
-    # We are looking for hosts that got valid GPS coordinates,
-    # and we just give them to the template to print them.
-    valid_hosts = []
-    for h in app.datamgr.get_hosts():
-        (_lat, _lng) = _get_coords(h)
-        if _valid_coords(h.get_name(), _lat, _lng):
-            h.customs['_LOC_LAT'] = _lat
-            h.customs['_LOC_LNG'] = _lng
-            valid_hosts.append(h)
+    valid_hosts = __get_valid_hosts()
                 
     return {
         'app': app,
@@ -179,3 +176,4 @@ pages = {
         'widget_picture': '/static/worldmap/img/widget_worldmap.png'
     },
 }
+
