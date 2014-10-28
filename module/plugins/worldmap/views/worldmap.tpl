@@ -30,14 +30,15 @@
 	// Markers ...
 	var allMarkers = [];
 
-	//------------------------------------------------------------------------------
-	// Create a marker on specified position for specified host/state with IW content
-	//------------------------------------------------------------------------------
-	// point : GPS coordinates
-	// name : host name
-	// state : host state
-	// content : infoWindow content
-	//------------------------------------------------------------------------------
+    //------------------------------------------------------------------------
+    // Create a marker on specified position for specified host/state with IW
+    // content
+    //------------------------------------------------------------------------
+    // point : GPS coordinates
+    // name : host name
+    // state : host state
+    // content : infoWindow content
+    //------------------------------------------------------------------------
 	markerCreate = function(name, state, content, position, iconBase) {
 		if (debugJs) console.log("-> marker creation for "+name+", state : "+state);
 		if (iconBase == undefined) iconBase='host';
@@ -53,7 +54,6 @@
 		);
 
 		try {
-			/* Standard Google maps marker */
 			var marker = new google.maps.Marker({
 				map: map, 
 				position: position,
@@ -64,26 +64,6 @@
 				hostname: name,
 				iw_content: content
 			});
-
-			/* Marker with label ...
-			var marker = new MarkerWithLabel({
-				map: map, 
-				position: position,
-				icon: markerImage, 
-				raiseOnDrag: false, draggable: true,
-				title: name,
-				hoststate: state,
-				hostname: name,
-				iw_content: content,
-
-				// Half the CSS width to get a centered label ...
-				labelAnchor: new google.maps.Point(50, -20),
-				labelClass: "labels",
-				labelContent: name,
-				labelStyle: {opacity: 0.8},
-				labelInBackground: true
-			});
-			*/
 			
 			// Register Custom "dragend" Event
 			google.maps.event.addListener(marker, 'dragend', function() {
@@ -98,10 +78,10 @@
 		return marker;
 	}
 
-	//------------------------------------------------------------------------------
+	//------------------------------------------------------------------------
 	// Map initialization
-	//------------------------------------------------------------------------------
-	//------------------------------------------------------------------------------
+	//------------------------------------------------------------------------
+	//------------------------------------------------------------------------
 	mapInit = function() {
 		if (debugJs) console.log('mapInit ...');
 		if (apiLoading) {
@@ -136,8 +116,6 @@
 						// Creating a marker for all hosts having GPS coordinates ...
 						if (debugJs) console.log("host {{h.get_name()}} is {{h.state}}. GPS is {{h.customs.get('_LOC_LAT')}} / {{h.customs.get('_LOC_LNG')}} :");
 						var gpsLocation = new google.maps.LatLng( {{float(h.customs.get('_LOC_LAT', params['default_Lat']))}} , {{float(h.customs.get('_LOC_LNG', params['default_Lng']))}} );
-						//gpsLocation = new google.maps.LatLng( {{h.customs.get('_LOC_LAT', params['default_Lat'])}} , {{h.customs.get('_LOC_LNG', params['default_Lng'])}} );
-						//gpsLocation = new google.maps.LatLng( defLat , defLng );
 						
 						var hostGlobalState = 0;
 						var hostState = "{{h.state}}";
@@ -183,7 +161,6 @@
 										if (hostGlobalState < 2) hostGlobalState=2;
 										break;
 								}
-								//if (debugJs) console.log('-> host global state : '+hostGlobalState);
 							%end
 						%end
 						
@@ -240,7 +217,6 @@
 							for (i=0; i < markers.length; i++) {
 								var currentMarker = markers[i];
 								if (debugJs) console.log("marker, "+currentMarker.hostname+" state is : "+currentMarker.hoststate);
-								// if (debugJs) console.log(currentMarker);
 								switch(currentMarker.hoststate.toUpperCase()) {
 									case "OK":
 										break;
@@ -291,8 +267,6 @@
 
 	//<!-- Ok go initialize the map with all elements when it's loaded -->
 	$(document).ready(function (){
-		// Uncomment to activate javascript console logs ...
-		// debugJs=true; 
 		$.getScript("http://maps.googleapis.com/maps/api/js?sensor=false&callback=mapInit", function() {
 			apiLoaded=true;
 			if (debugJs) console.log("Google maps API loaded ...");
