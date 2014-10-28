@@ -59,10 +59,13 @@ def checkauth():
     else:
         return user
 
+
 def _valid_coords(hostname, lat, lng):
 
-    COORD_MAX = 180
-    COORD_MIN = -180
+    COORD_MAX_LAT = 85
+    COORD_MIN_LAT = -85
+    COORD_MAX_LNG = 180
+    COORD_MIN_LNG = -180
 
     if not lat and not lng:
         return False
@@ -77,11 +80,11 @@ def _valid_coords(hostname, lat, lng):
         logger.warning("[worldmap] Host {} has invalid coordinates".format(hostname))
         return False
 
-    if lat >= COORD_MAX or lat <= COORD_MIN:
+    if lat >= COORD_MAX_LAT or lat <= COORD_MIN_LAT:
         logger.warning("[worldmap] Host {} has a latitude out of range".format(hostname))
         return False
 
-    if lng >= COORD_MAX or lng <= COORD_MIN:
+    if lng >= COORD_MAX_LNG or lng <= COORD_MIN_LNG:
         logger.warning("[worldmap] Host {} has a longitude out of range".format(hostname))
         return False
 
