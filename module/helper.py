@@ -456,15 +456,8 @@ class Helper(object):
         if len(fathers) > 0:
             # We look if the below tree is goodor not
             tree_is_good = (node.state_id == 0)
-
-            # If the tree is good, we will use an expand image
-            # and hide the tree
-            if tree_is_good:
-                display = 'none'
-                img = 'expand.png'
-            else:  # we will already show the tree, and use a reduce image
-                display = 'block'
-                img = 'reduce.png'
+            display = 'block'
+            img = 'reduce.png'
 
             # If we are the root, we already got this
             if level != 0:
