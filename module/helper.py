@@ -463,7 +463,7 @@ class Helper(object):
             if level != 0:
                 s += """<a id="togglelink-%s" href="javascript:toggleBusinessElt('%s')"><img id="business-parents-img-%s" src="/static/images/%s" alt="toggle"> </a> \n""" % (name, name, name, img)
 
-            s += """<ul id="business-parents-%s" style="display: %s; ">""" % (name, display)
+	    s += """<ul id="business-parents-%s" style="display: %s; margin-top: 5px">""" % (name, display)
 
             for n in fathers:
                 sub_node = n['node']
@@ -761,9 +761,6 @@ class Helper(object):
                 tree['sons'].append(s)
                 tree = s
         return tree
-                
-
-    
 
 
     def get_host_service_aggregation_tree(self, h):
@@ -822,7 +819,6 @@ class Helper(object):
             s += '</li>'
         s += "</ul></li>"
 
-                
         s += "</ul>"
         #safe_print("Returning s:", s)
         return s
