@@ -13,8 +13,6 @@
 	// Google API not yet loaded ...
 	var apiLoaded=false;
 	var apiLoading=false;
-	// Set true to activate javascript console logs
-	var debugJs=false;
 
 	var map;
 	var infoWindow;
@@ -40,7 +38,6 @@
     // content : infoWindow content
     //------------------------------------------------------------------------
 	markerCreate = function(name, state, content, position, iconBase) {
-		if (debugJs) console.log("-> marker creation for "+name+", state : "+state);
 		if (iconBase == undefined) iconBase='host';
 
 		var iconUrl=imagesDir+'/'+iconBase+"-"+state+".png";
@@ -83,7 +80,6 @@
 	//------------------------------------------------------------------------
 	//------------------------------------------------------------------------
 	mapInit = function() {
-		if (debugJs) console.log('mapInit ...');
 		if (apiLoading) {
 			apiLoaded=true;
 		}
@@ -94,12 +90,8 @@
 		
 		// "Spiderify" close markers : https://github.com/jawj/OverlappingMarkerSpiderfier
 		$.getScript("/static/worldmap/js/oms.min.js", function( data, textStatus, jqxhr ) {
-			if (debugJs) console.log('Spiderify API loaded ...');
-			$.getScript(debugJs ? "/static/worldmap/js/markerclusterer.js" : "/static/worldmap/js/markerclusterer_packed.js", function( data, textStatus, jqxhr ) {
-				if (debugJs) console.log('Google marker clusterer API loaded ...');
-				$.getScript(debugJs ? "/static/worldmap/js/markerwithlabel.js" : "/static/worldmap/js/markerwithlabel_packed.js", function( data, textStatus, jqxhr ) {
-					if (debugJs) console.log('Google labeled marker API loaded ...');
-					
+			$.getScript("/static/worldmap/js/markerclusterer_packed.js", function( data, textStatus, jqxhr ) {
+				$.getScript("/static/worldmap/js/markerwithlabel_packed.js", function( data, textStatus, jqxhr ) {
 					map = new google.maps.Map(document.getElementById('map'),{
 						center: new google.maps.LatLng (defLat, defLng),
 						zoom: defaultZoom,
@@ -114,7 +106,6 @@
 					
 					try {
 						// Creating a marker for all hosts having GPS coordinates ...
-						if (debugJs) console.log("host {{h.get_name()}} is {{h.state}}. GPS is {{h.customs.get('_LOC_LAT')}} / {{h.customs.get('_LOC_LNG')}} :");
 						var gpsLocation = new google.maps.LatLng( {{float(h.customs.get('_LOC_LAT', params['default_Lat']))}} , {{float(h.customs.get('_LOC_LNG', params['default_Lng']))}} );
 						
 						var hostGlobalState = 0;
@@ -130,7 +121,6 @@
 								hostGlobalState=1;
 								break;
 						}
-						if (debugJs) console.log('-> host global state : '+hostGlobalState);
 
 						var markerInfoWindowContent = [
 							'<div class="map-infoView" id="iw-{{h.get_name()}}">',
@@ -180,9 +170,8 @@
 						// Create marker and append to markers list ...
 						allMarkers.push(markerCreate('{{h.get_name()}}', markerState, markerInfoWindowContent, gpsLocation, 'host'));
 						bounds.extend(gpsLocation);
-						if (debugJs) console.log('-> marker created at '+gpsLocation+'.');
 					} catch (e) {
-						if (debugJs) console.error('markerCreate, exception : '+e.message);
+						console.error('markerCreate, exception : '+e.message);
 					}
 						
 					%end
@@ -211,12 +200,9 @@
 						,
 						calculator: function(markers, numStyles) {
 							// Manage markers in the cluster ...
-							if (debugJs) console.log("marker, count : "+markers.length);
-							if (debugJs) console.log(markers);
 							var clusterIndex = 1;
 							for (i=0; i < markers.length; i++) {
 								var currentMarker = markers[i];
-								if (debugJs) console.log("marker, "+currentMarker.hostname+" state is : "+currentMarker.hoststate);
 								switch(currentMarker.hoststate.toUpperCase()) {
 									case "OK":
 										break;
@@ -229,7 +215,6 @@
 								}
 							}
 
-							if (debugJs) console.log("marker, index : "+clusterIndex);
 							return {text: markers.length, index: clusterIndex};
 						}
 					};
@@ -245,16 +230,14 @@
 						spiralLengthFactor: 20
 					});
 					oms.addListener('click', function(marker) {
-						if (debugJs) console.log('click marker for host : '+marker.hostname);
 						infoWindow.setContent(marker.iw_content);
 						infoWindow.open(map, marker);
 					});
 					oms.addListener('spiderfy', function(markers) {
-						if (debugJs) console.log('spiderfy ...');
 						infoWindow.close();
 					});
 					oms.addListener('unspiderfy', function(markers) {
-						if (debugJs) console.log('unspiderfy ...');
+						console.log('unspiderfy ...');
 					});
 					
 					for (i=0; i < allMarkers.length; i++) {
@@ -269,7 +252,6 @@
 	$(document).ready(function (){
 		$.getScript("http://maps.googleapis.com/maps/api/js?sensor=false&callback=mapInit", function() {
 			apiLoaded=true;
-			if (debugJs) console.log("Google maps API loaded ...");
 		});
 	});
 </script>
