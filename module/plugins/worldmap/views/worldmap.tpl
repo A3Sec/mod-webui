@@ -10,10 +10,6 @@
 </div>
 
 <script>
-	// Google API not yet loaded ...
-	var apiLoaded=false;
-	var apiLoading=false;
-
 	var map;
 	var infoWindow;
 	
@@ -79,7 +75,7 @@
 	// Map initialization
 	//------------------------------------------------------------------------
 	//------------------------------------------------------------------------
-	mapInit = function() {
+	var mapInit = function mapInit() {
 		if (apiLoading) {
 			apiLoaded=true;
 		}
@@ -248,10 +244,16 @@
 		});
 	};
 
-	//<!-- Ok go initialize the map with all elements when it's loaded -->
-	$(document).ready(function (){
-		$.getScript("http://maps.googleapis.com/maps/api/js?sensor=false&callback=mapInit", function() {
-			apiLoaded=true;
-		});
-	});
+    var main = function main () {
+        var mapsApiURI = "http://maps.googleapis.com/maps/api/js?sensor=false";
+        var success = function success(data, textStatus, xhr) {
+            if (xhr.status === 200) {
+                mapInit();
+            }
+        };
+		$.getScript(mapsApiURI, success.bind(this));
+    };
+
+    $(document).ready(main);
+
 </script>
