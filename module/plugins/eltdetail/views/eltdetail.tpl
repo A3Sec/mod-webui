@@ -608,6 +608,10 @@ Invalid element name
 						<a id="togglelink-{{elt.get_dbg_name()}}" href="javascript:toggleBusinessElt('{{elt.get_dbg_name()}}')"> {{!helper.get_button('Show dependency tree', img='/static/images/expand.png')}}</a>
 						<div class="clear"></div>
 						{{!helper.print_business_rules(datamgr.get_business_parents(elt), source_problems=elt.source_problems)}}
+                            %if elt_type=='host':
+                            %_html_id = helper.get_html_id(elt)
+                            {{!helper.print_aggregation_tree(helper.get_host_service_aggregation_tree(elt), _html_id)}}
+                            %end
 						%end
 
 						<hr/>
