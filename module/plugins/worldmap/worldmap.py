@@ -45,10 +45,13 @@ try:
     params['default_zoom'] = int(params['default_zoom'])
     
     logger.debug("WebUI plugin '%s', configuration loaded." % (plugin_name))
-    logger.debug("Plugin configuration, default position: %s / %s" % (params['default_Lat'], params['default_Lng']))
-    logger.debug("Plugin configuration, default zoom level: %d" % (params['default_zoom']))
+    debug_msg = "Plugin configuration, default position: %s / %s"
+    logger.debug(debug_msg % (params['default_Lat'], params['default_Lng']))
+    debug_msg = "Plugin configuration, default zoom level: %d"
+    logger.debug(debug_msg % (params['default_zoom']))
 except Exception, exp:
-    logger.warning("WebUI plugin '%s', configuration file (%s) not available: %s" % (plugin_name, configuration_file, str(exp)))
+    warn_msg = "WebUI plugin '%s', configuration file (%s) not available: %s"
+    logger.warning(warn_msg % (plugin_name, configuration_file, str(exp)))
 
 
 def checkauth():
@@ -77,15 +80,18 @@ def _valid_coords(hostname, lat, lng):
         lat = float(lat)
         lng = float(lng)
     except ValueError:
-        logger.warning("[worldmap] Host {} has invalid coordinates".format(hostname))
+        warning_msg = "[worldmap] Host {} has invalid coordinates"
+        logger.warning(warning_msg.format(hostname))
         return False
 
     if lat >= COORD_MAX_LAT or lat <= COORD_MIN_LAT:
-        logger.warning("[worldmap] Host {} has a latitude out of range".format(hostname))
+        warning_msg = "[worldmap] Host {} has a latitude out of range"
+        logger.warning(warning_msg.format(hostname))
         return False
 
     if lng >= COORD_MAX_LNG or lng <= COORD_MIN_LNG:
-        logger.warning("[worldmap] Host {} has a longitude out of range".format(hostname))
+        warning_msg = "[worldmap] Host {} has a longitude out of range"
+        logger.warning(warning_msg.format(hostname))
         return False
 
     return True
@@ -113,7 +119,12 @@ def get_page():
             valid_hosts.append(h)
 
     # So now we can just send the valid hosts to the template
-    return {'app': app, 'user': user, 'params': params, 'hosts' : valid_hosts}
+    return {
+        'app': app,
+        'user': user,
+        'params': params,
+        'hosts' : valid_hosts
+    }
 
 
 def worldmap_widget():
@@ -134,11 +145,17 @@ def worldmap_widget():
             h.customs['_LOC_LNG'] = _lng
             valid_hosts.append(h)
                 
-    return {'app': app, 'user': user, 'wid': wid,
-            'collapsed': collapsed, 'options': options,
-            'base_url': '/widget/worldmap', 'title': 'Worldmap',
-            'params': params, 'hosts' : valid_hosts
-            }
+    return {
+        'app': app,
+        'user': user,
+        'wid': wid,
+        'collapsed': collapsed,
+        'options': options,
+        'base_url': '/widget/worldmap',
+        'title': 'Worldmap',
+        'params': params,
+        'hosts' : valid_hosts
+    }
 
 
 widget_desc = '''<h4>Worldmap</h4>
@@ -146,6 +163,19 @@ Show a map of all monitored hosts.
 '''
 
 # We export our properties to the webui
-pages = {get_page: {'routes': ['/worldmap'], 'view': 'worldmap', 'static': True}, 
-         worldmap_widget: {'routes': ['/widget/worldmap'], 'view': 'worldmap_widget', 'static': True, 'widget': ['dashboard'], 'widget_desc': widget_desc, 'widget_name': 'worldmap', 'widget_picture': '/static/worldmap/img/widget_worldmap.png'},
+pages = {
+    get_page: {
+        'routes': ['/worldmap'],
+        'view': 'worldmap',
+        'static': True
+    },
+    worldmap_widget: {
+        'routes': ['/widget/worldmap'],
+        'view': 'worldmap_widget',
+        'static': True,
+        'widget': ['dashboard'],
+        'widget_desc': widget_desc,
+        'widget_name': 'worldmap',
+        'widget_picture': '/static/worldmap/img/widget_worldmap.png'
+    },
 }
