@@ -177,11 +177,11 @@ Invalid element name
 						%if elt_type=='host':
 						<tr>
 							<td>Alias:</td>
-							<td>{{elt.alias}}</td>
+							<td><b>{{elt.alias}}</b></td>
 						</tr>
 						<tr>
 							<td>Address:</td>
-							<td>{{elt.address}}</td>
+							<td><b>{{elt.address}}</b></td>
 						</tr>
 						<tr>
 							<td>Importance:</td>
