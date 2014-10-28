@@ -170,7 +170,7 @@ Invalid element name
 				</div>
 				%end
 			</div>
-			<div id="collapseOne" class="accordion-body collapse">
+			<div id="collapseOne" class="accordion-body collapse in">
 				<div class="fitted-bar ">
 					<table class="col-lg-4 leftmargin">
 						%#Alias, parents and hostgroups are for host only
