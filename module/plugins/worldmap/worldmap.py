@@ -107,9 +107,9 @@ def _get_coords(host):
 
 # We are looking for hosts that got valid GPS coordinates,
 # and we just give them to the template to print them.
-def __get_valid_hosts():
+def __get_valid_hosts(hosts):
     valid_hosts = []
-    for h in app.datamgr.get_hosts():
+    for h in hosts:
         (_lat, _lng) = _get_coords(h)
         if _valid_coords(h.get_name(), _lat, _lng):
             h.customs['_LOC_LAT'] = _lat
@@ -119,16 +119,34 @@ def __get_valid_hosts():
     return valid_hosts
 
 
+def __get_hostgroups():
+    name_list = []
+    hostgroup_list = app.datamgr.get_hostgroups()
+    for hostgroup in hostgroup_list:
+        hostgroup_name = hostgroup.get_name()
+        name_list.append(hostgroup_name)
+    return name_list
+
+
+def __get_hosts_by_hostgroup(hostgroup_name):
+    all_hosts = app.datamgr.get_hostgroup(hostgroup_name).get_hosts()
+    valid_hosts = __get_valid_hosts(all_hosts)
+
+    return valid_hosts
+
+
 def get_page():
     user = checkauth()
-
-    valid_hosts = __get_valid_hosts()
+    hosts = app.datamgr.get_hosts()
+    valid_hosts = __get_valid_hosts(hosts)
+    hostgroups = __get_hostgroups()
 
     return {
         'app': app,
         'user': user,
         'params': params,
-        'hosts' : valid_hosts
+        'hosts': valid_hosts,
+        'hostgroups': hostgroups
     }
 
 
@@ -140,7 +158,8 @@ def worldmap_widget():
 
     options = {}
 
-    valid_hosts = __get_valid_hosts()
+    hosts = app.datamgr.get_hosts()
+    valid_hosts = __get_valid_hosts(hosts)
                 
     return {
         'app': app,
@@ -152,6 +171,21 @@ def worldmap_widget():
         'title': 'Worldmap',
         'params': params,
         'hosts' : valid_hosts
+    }
+
+
+def filter_by_hostgroup(hostgroup_name):
+    user = checkauth()
+
+    hosts = __get_hosts_by_hostgroup(hostgroup_name)
+    hostgroups = __get_hostgroups()
+
+    return {
+        'app': app,
+        'user': user,
+        'params': params,
+        'hosts': hosts,
+        'hostgroups': hostgroups
     }
 
 
@@ -174,6 +208,11 @@ pages = {
         'widget_desc': widget_desc,
         'widget_name': 'worldmap',
         'widget_picture': '/static/worldmap/img/widget_worldmap.png'
+    },
+    filter_by_hostgroup: {
+        'routes': ['/worldmap/:hostgroup_name'],
+        'view': 'worldmap',
+        'static': True
     },
 }
 

@@ -7,6 +7,20 @@
 			<a href="#" class="alert-link">Loading map ...</a>
 		</div>
 	</div>
+    <div class="row">
+        <div class="col-xs-2">
+            <div class="form-group">
+                <label class="control-label">Hostgroups:</label>
+                <select class="form-control" name="filter" onchange="location = this.options[this.selectedIndex].value">
+                    <option>-----</option>
+                    <option value="/worldmap">No filter</option>
+                    %for name in hostgroups:
+                    <option value="/worldmap/{{ name }}">{{ name }}</option>
+                    %end
+                </select>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
