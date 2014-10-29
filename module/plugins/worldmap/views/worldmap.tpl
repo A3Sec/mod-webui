@@ -80,45 +80,39 @@
 	//------------------------------------------------------------------------
 	//------------------------------------------------------------------------
 	var mapInit = function mapInit() {
-		if (apiLoading) {
-			apiLoaded=true;
-		}
-		if (! apiLoaded) {
-			console.error('Google Maps API not loaded. Call mapLoad function ...');
-			return;
-		}
-		
 		// "Spiderify" close markers : https://github.com/jawj/OverlappingMarkerSpiderfier
 		$.getScript("/static/worldmap/js/oms.min.js", function( data, textStatus, jqxhr ) {
 			$.getScript("/static/worldmap/js/markerclusterer_packed.js", function( data, textStatus, jqxhr ) {
 				$.getScript("/static/worldmap/js/markerwithlabel_packed.js", function( data, textStatus, jqxhr ) {
-					map = new google.maps.Map(document.getElementById('map'),{
+                    var mapContainer = document.getElementById('map');
+                    var mapOptions = {
 						center: new google.maps.LatLng (defLat, defLng),
 						zoom: defaultZoom,
 						mapTypeId: google.maps.MapTypeId.ROADMAP
-					});
-
+					};
+					var map = new google.maps.Map(mapContainer, mapOptions);
 					var bounds = new google.maps.LatLngBounds();
-					infoWindow = new google.maps.InfoWindow;
+					var infoWindow = new google.maps.InfoWindow;
 					
-					%# For all hosts ...
 					%for h in hosts:
 					
 					try {
 						// Creating a marker for all hosts having GPS coordinates ...
-						var gpsLocation = new google.maps.LatLng( {{float(h.customs.get('_LOC_LAT', params['default_Lat']))}} , {{float(h.customs.get('_LOC_LNG', params['default_Lng']))}} );
+                        var latitude = {{float(h.customs.get('_LOC_LAT', params['default_Lat']))}};
+                        var longitude = {{float(h.customs.get('_LOC_LNG', params['default_Lng']))}};
+						var gpsLocation = new google.maps.LatLng(latitude, longitude);
 						
 						var hostGlobalState = 0;
 						var hostState = "{{h.state}}";
 						switch(hostState.toUpperCase()) {
 							case "UP":
-								hostGlobalState=0;
+								hostGlobalState = 0;
 								break;
 							case "DOWN":
-								hostGlobalState=2;
+								hostGlobalState = 2;
 								break;
 							default:
-								hostGlobalState=1;
+								hostGlobalState = 1;
 								break;
 						}
 
@@ -145,10 +139,14 @@
 									case "UNKNOWN":
 									case "PENDING":
 									case "WARNING":
-										if (hostGlobalState < 1) hostGlobalState=1;
+										if (hostGlobalState < 1) {
+                                            hostGlobalState = 1;
+                                        }
 										break;
 									case "CRITICAL":
-										if (hostGlobalState < 2) hostGlobalState=2;
+										if (hostGlobalState < 2) {
+                                            hostGlobalState = 2;
+                                        }
 										break;
 								}
 							%end
@@ -171,56 +169,56 @@
 						allMarkers.push(markerCreate('{{h.get_name()}}', markerState, markerInfoWindowContent, gpsLocation, 'host'));
 						bounds.extend(gpsLocation);
 					} catch (e) {
-						console.error('markerCreate, exception : '+e.message);
+						console.error('markerCreate, exception : ' + e.message);
 					}
 						
 					%end
-					%# End all hosts ...
+					%# End all hosts
 					
 					map.fitBounds(bounds);
-
-					var mcOptions = {
-						zoomOnClick: true, showText: true, averageCenter: true, gridSize: 40, maxZoom: 20, 
-						styles: [
-							{ height: 53, width: 53, url: imagesDir+"m1.png" },
-							{ height: 56, width: 56, url: imagesDir+"m2.png" },
-							{ height: 66, width: 66, url: imagesDir+"m3.png" },
-							{ height: 78, width: 78, url: imagesDir+"m4.png" },
-							{ height: 90, width: 90, url: imagesDir+"m5.png" }
-						]
-					};
 					
-					var mcOptions = {
-						zoomOnClick: true, showText: true, averageCenter: true, gridSize: 10, minimumClusterSize: 2, maxZoom: 18,
+					var markerClusterOptions = {
+						zoomOnClick: true,
+                        showText: true,
+                        averageCenter: true,
+                        gridSize: 10,
+                        minimumClusterSize: 2,
+                        maxZoom: 18,
 						styles: [
 							{ height: 50, width: 50, url: imagesDir+"/cluster-OK.png" },
 							{ height: 60, width: 60, url: imagesDir+"/cluster-WARNING.png" },
 							{ height: 60, width: 60, url: imagesDir+"/cluster-KO.png" }
-						]
-						,
-						calculator: function(markers, numStyles) {
-							// Manage markers in the cluster ...
+						],
+						calculator: function calculator(markers, numStyles) {
 							var clusterIndex = 1;
+                            var i;
 							for (i=0; i < markers.length; i++) {
 								var currentMarker = markers[i];
 								switch(currentMarker.hoststate.toUpperCase()) {
 									case "OK":
 										break;
 									case "WARNING":
-										if (clusterIndex < 2) clusterIndex=2;
+										if (clusterIndex < 2) {
+                                            clusterIndex = 2;
+                                        }
 										break;
 									case "KO":
-										if (clusterIndex < 3) clusterIndex=3;
+										if (clusterIndex < 3) {
+                                            clusterIndex = 3;
+                                        }
 										break;
 								}
 							}
 
-							return {text: markers.length, index: clusterIndex};
+							return {
+                                text: markers.length,
+                                index: clusterIndex
+                            };
 						}
 					};
-					var markerCluster = new MarkerClusterer(map, allMarkers, mcOptions);
+					var markerCluster = new MarkerClusterer(map, allMarkers, markerClusterOptions);
 
-					var oms = new OverlappingMarkerSpiderfier(map, {
+                    var omsOptions = {
 						markersWontMove: true, 
 						markersWontHide: true,
 						keepSpiderfied: true,
@@ -228,7 +226,8 @@
 						circleFootSeparation: 50,
 						spiralFootSeparation: 50,
 						spiralLengthFactor: 20
-					});
+					}
+					var oms = new OverlappingMarkerSpiderfier(map, omsOptions);
 					oms.addListener('click', function(marker) {
 						infoWindow.setContent(marker.iw_content);
 						infoWindow.open(map, marker);
@@ -240,7 +239,7 @@
 						console.log('unspiderfy ...');
 					});
 					
-					for (i=0; i < allMarkers.length; i++) {
+					for (var i = 0; i < allMarkers.length; i++) {
 						oms.addMarker(allMarkers[i]);
 					}
 				});
