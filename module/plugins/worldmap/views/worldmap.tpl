@@ -7,7 +7,7 @@
 			<a href="#" class="alert-link">Loading map ...</a>
 		</div>
 	</div>
-    <div class="row">
+    <div class="filters row">
         <div class="col-xs-2">
             <div class="form-group">
                 <label class="control-label">Hostgroups:</label>
