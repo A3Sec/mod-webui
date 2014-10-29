@@ -80,183 +80,185 @@
 	//------------------------------------------------------------------------
 	//------------------------------------------------------------------------
 	var mapInit = function mapInit() {
-		// "Spiderify" close markers : https://github.com/jawj/OverlappingMarkerSpiderfier
-		$.getScript("/static/worldmap/js/oms.min.js", function( data, textStatus, jqxhr ) {
-			$.getScript("/static/worldmap/js/markerclusterer_packed.js", function( data, textStatus, jqxhr ) {
-				$.getScript("/static/worldmap/js/markerwithlabel_packed.js", function( data, textStatus, jqxhr ) {
-                    var mapContainer = document.getElementById('map');
-                    var mapOptions = {
-						center: new google.maps.LatLng (defLat, defLng),
-						zoom: defaultZoom,
-						mapTypeId: google.maps.MapTypeId.ROADMAP
-					};
-					var map = new google.maps.Map(mapContainer, mapOptions);
-					var bounds = new google.maps.LatLngBounds();
-					var infoWindow = new google.maps.InfoWindow;
-					
-					%for h in hosts:
-					
-					try {
-						// Creating a marker for all hosts having GPS coordinates ...
-                        var latitude = {{float(h.customs.get('_LOC_LAT', params['default_Lat']))}};
-                        var longitude = {{float(h.customs.get('_LOC_LNG', params['default_Lng']))}};
-						var gpsLocation = new google.maps.LatLng(latitude, longitude);
-						
-						var hostGlobalState = 0;
-						var hostState = "{{h.state}}";
-						switch(hostState.toUpperCase()) {
-							case "UP":
-								hostGlobalState = 0;
-								break;
-							case "DOWN":
-								hostGlobalState = 2;
-								break;
-							default:
-								hostGlobalState = 1;
-								break;
-						}
+        var mapContainer = document.getElementById('map');
+        var mapOptions = {
+            center: new google.maps.LatLng (defLat, defLng),
+            zoom: defaultZoom,
+            mapTypeId: google.maps.MapTypeId.ROADMAP
+        };
+        var map = new google.maps.Map(mapContainer, mapOptions);
+        var bounds = new google.maps.LatLngBounds();
+        var infoWindow = new google.maps.InfoWindow;
 
-						var markerInfoWindowContent = [
-							'<div class="map-infoView" id="iw-{{h.get_name()}}">',
-							'<img class="map-iconHostState map-host-{{h.state}} map-host-{{h.state_type}}" src="{{app.helper.get_icon_state(h)}}" />',
-							'<span class="map-hostname"><a href="/host/{{h.get_name()}}">{{h.get_name()}}</a> is {{h.state}}.</span>',
-							'<hr/>',
-							%if h.services:
-							'<ul class="map-servicesList">',
-							%for s in h.services:
-								'<li><span class="map-service map-service-{{s.state}} map-service-{{s.state_type}}"></span><a href="/service/{{h.get_name()}}/{{s.get_name()}}">{{s.get_name()}}</a> is {{s.state}}.</li>',
-							%end
-							'</ul>',
-							%end
-							'</div>'
-						].join('');
-						%if h.services:
-							%for s in h.services:
-								var serviceState = "{{s.state}}";
-								switch(serviceState.toUpperCase()) {
-									case "OK":
-										break;
-									case "UNKNOWN":
-									case "PENDING":
-									case "WARNING":
-										if (hostGlobalState < 1) {
-                                            hostGlobalState = 1;
-                                        }
-										break;
-									case "CRITICAL":
-										if (hostGlobalState < 2) {
-                                            hostGlobalState = 2;
-                                        }
-										break;
-								}
-							%end
-						%end
-						
-						var markerState = "UNKNOWN";
-						switch(hostGlobalState) {
-							case 0:
-								markerState = "OK";
-								break;
-							case 2:
-								markerState = "KO";
-								break;
-							default:
-								markerState = "WARNING";
-								break;
-						}
-						
-						// Create marker and append to markers list ...
-						allMarkers.push(markerCreate('{{h.get_name()}}', markerState, markerInfoWindowContent, gpsLocation, 'host'));
-						bounds.extend(gpsLocation);
-					} catch (e) {
-						console.error('markerCreate, exception : ' + e.message);
-					}
-						
-					%end
-					%# End all hosts
-					
-					map.fitBounds(bounds);
-					
-					var markerClusterOptions = {
-						zoomOnClick: true,
-                        showText: true,
-                        averageCenter: true,
-                        gridSize: 10,
-                        minimumClusterSize: 2,
-                        maxZoom: 18,
-						styles: [
-							{ height: 50, width: 50, url: imagesDir+"/cluster-OK.png" },
-							{ height: 60, width: 60, url: imagesDir+"/cluster-WARNING.png" },
-							{ height: 60, width: 60, url: imagesDir+"/cluster-KO.png" }
-						],
-						calculator: function calculator(markers, numStyles) {
-							var clusterIndex = 1;
-                            var i;
-							for (i=0; i < markers.length; i++) {
-								var currentMarker = markers[i];
-								switch(currentMarker.hoststate.toUpperCase()) {
-									case "OK":
-										break;
-									case "WARNING":
-										if (clusterIndex < 2) {
-                                            clusterIndex = 2;
-                                        }
-										break;
-									case "KO":
-										if (clusterIndex < 3) {
-                                            clusterIndex = 3;
-                                        }
-										break;
-								}
-							}
+        %for h in hosts:
 
-							return {
-                                text: markers.length,
-                                index: clusterIndex
-                            };
-						}
-					};
-					var markerCluster = new MarkerClusterer(map, allMarkers, markerClusterOptions);
+        try {
+            // Creating a marker for all hosts having GPS coordinates ...
+            var latitude = {{float(h.customs.get('_LOC_LAT', params['default_Lat']))}};
+            var longitude = {{float(h.customs.get('_LOC_LNG', params['default_Lng']))}};
+            var gpsLocation = new google.maps.LatLng(latitude, longitude);
 
-                    var omsOptions = {
-						markersWontMove: true, 
-						markersWontHide: true,
-						keepSpiderfied: true,
-						nearbyDistance: 10,
-						circleFootSeparation: 50,
-						spiralFootSeparation: 50,
-						spiralLengthFactor: 20
-					}
-					var oms = new OverlappingMarkerSpiderfier(map, omsOptions);
-					oms.addListener('click', function(marker) {
-						infoWindow.setContent(marker.iw_content);
-						infoWindow.open(map, marker);
-					});
-					oms.addListener('spiderfy', function(markers) {
-						infoWindow.close();
-					});
-					oms.addListener('unspiderfy', function(markers) {
-						console.log('unspiderfy ...');
-					});
-					
-					for (var i = 0; i < allMarkers.length; i++) {
-						oms.addMarker(allMarkers[i]);
-					}
-				});
-			});
-		});
+            var hostGlobalState = 0;
+            var hostState = "{{h.state}}";
+            switch(hostState.toUpperCase()) {
+                case "UP":
+                    hostGlobalState = 0;
+                    break;
+                case "DOWN":
+                    hostGlobalState = 2;
+                    break;
+                default:
+                    hostGlobalState = 1;
+                    break;
+            }
+
+            var markerInfoWindowContent = [
+                '<div class="map-infoView" id="iw-{{h.get_name()}}">',
+                '<img class="map-iconHostState map-host-{{h.state}} map-host-{{h.state_type}}" src="{{app.helper.get_icon_state(h)}}" />',
+                '<span class="map-hostname"><a href="/host/{{h.get_name()}}">{{h.get_name()}}</a> is {{h.state}}.</span>',
+                '<hr/>',
+                %if h.services:
+                '<ul class="map-servicesList">',
+                %for s in h.services:
+                    '<li><span class="map-service map-service-{{s.state}} map-service-{{s.state_type}}"></span><a href="/service/{{h.get_name()}}/{{s.get_name()}}">{{s.get_name()}}</a> is {{s.state}}.</li>',
+                %end
+                '</ul>',
+                %end
+                '</div>'
+            ].join('');
+            %if h.services:
+                %for s in h.services:
+                    var serviceState = "{{s.state}}";
+                    switch(serviceState.toUpperCase()) {
+                        case "OK":
+                            break;
+                        case "UNKNOWN":
+                        case "PENDING":
+                        case "WARNING":
+                            if (hostGlobalState < 1) {
+                                hostGlobalState = 1;
+                            }
+                            break;
+                        case "CRITICAL":
+                            if (hostGlobalState < 2) {
+                                hostGlobalState = 2;
+                            }
+                            break;
+                    }
+                %end
+            %end
+
+            var markerState = "UNKNOWN";
+            switch(hostGlobalState) {
+                case 0:
+                    markerState = "OK";
+                    break;
+                case 2:
+                    markerState = "KO";
+                    break;
+                default:
+                    markerState = "WARNING";
+                    break;
+            }
+
+            // Create marker and append to markers list ...
+            allMarkers.push(markerCreate('{{h.get_name()}}', markerState, markerInfoWindowContent, gpsLocation, 'host'));
+            bounds.extend(gpsLocation);
+        } catch (e) {
+            console.error('markerCreate, exception : ' + e.message);
+        }
+
+        %end
+        %# End all hosts
+
+        map.fitBounds(bounds);
+
+        var markerClusterOptions = {
+            zoomOnClick: true,
+            showText: true,
+            averageCenter: true,
+            gridSize: 10,
+            minimumClusterSize: 2,
+            maxZoom: 18,
+            styles: [
+                { height: 50, width: 50, url: imagesDir+"/cluster-OK.png" },
+                { height: 60, width: 60, url: imagesDir+"/cluster-WARNING.png" },
+                { height: 60, width: 60, url: imagesDir+"/cluster-KO.png" }
+            ],
+            calculator: function calculator(markers, numStyles) {
+                var clusterIndex = 1;
+                var i;
+                for (i=0; i < markers.length; i++) {
+                    var currentMarker = markers[i];
+                    switch(currentMarker.hoststate.toUpperCase()) {
+                        case "OK":
+                            break;
+                        case "WARNING":
+                            if (clusterIndex < 2) {
+                                clusterIndex = 2;
+                            }
+                            break;
+                        case "KO":
+                            if (clusterIndex < 3) {
+                                clusterIndex = 3;
+                            }
+                            break;
+                    }
+                }
+
+                return {
+                    text: markers.length,
+                    index: clusterIndex
+                };
+            }
+        };
+        var markerCluster = new MarkerClusterer(map, allMarkers, markerClusterOptions);
+
+        var omsOptions = {
+            markersWontMove: true,
+            markersWontHide: true,
+            keepSpiderfied: true,
+            nearbyDistance: 10,
+            circleFootSeparation: 50,
+            spiralFootSeparation: 50,
+            spiralLengthFactor: 20
+        }
+        var oms = new OverlappingMarkerSpiderfier(map, omsOptions);
+        oms.addListener('click', function(marker) {
+            infoWindow.setContent(marker.iw_content);
+            infoWindow.open(map, marker);
+        });
+        oms.addListener('spiderfy', function(markers) {
+            infoWindow.close();
+        });
+        oms.addListener('unspiderfy', function(markers) {
+            console.log('unspiderfy ...');
+        });
+
+        for (var i = 0; i < allMarkers.length; i++) {
+            oms.addMarker(allMarkers[i]);
+        }
 	};
 
     var main = function main () {
-        var mapsApiURI = "http://maps.googleapis.com/maps/api/js?sensor=false";
-        var success = function success(data, textStatus, xhr) {
-            if (xhr.status === 200) {
-                mapInit();
-            }
-        };
-		$.getScript(mapsApiURI, success.bind(this));
+        var markerWithLabelURI = "/static/worldmap/js/markerwithlabel_packed.js";
+        var markerClusterURI = "/static/worldmap/js/markerclusterer_packed.js";
+        var omsURI = "/static/worldmap/js/oms.min.js";
+        $.when(
+            $.getScript(markerClusterURI),
+            $.getScript(markerWithLabelURI),
+            $.getScript(omsURI),
+            $.Deferred(function (deferred) {
+                $(deferred.resolve);
+            })
+        ).done(function (){
+            mapInit();
+        });
     };
 
-    $(document).ready(main);
+    $(document).ready(function () {
+        var mapsApiURI = "http://maps.googleapis.com/maps/api/js?sensor=false&callback=main";
+        $.getScript(mapsApiURI);
+    });
 
 </script>
