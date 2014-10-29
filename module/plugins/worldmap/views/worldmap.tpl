@@ -33,43 +33,47 @@
     // state : host state
     // content : infoWindow content
     //------------------------------------------------------------------------
-	markerCreate = function(name, state, content, position, iconBase) {
-		if (iconBase == undefined) iconBase='host';
+    var markerCreate = function(name, state, content, position, iconBase) {
+        if (!iconBase) {
+            iconBase='host';
+        }
+        var iconUrl = imagesDir + '/' + iconBase;
+        if (state) {
+            iconUrl += "-" + state;
+        }
+        iconUrl += ".png";
 
-		var iconUrl=imagesDir+'/'+iconBase+"-"+state+".png";
-		if (state == '') iconUrl=imagesDir+'/'+iconBase+".png";
-		
-		var markerImage = new google.maps.MarkerImage(
-			iconUrl,
-			new google.maps.Size(32,32), 
-			new google.maps.Point(0,0), 
-			new google.maps.Point(16,32)
-		);
+        var size = new google.maps.Size(32,32);
+        var origin = new google.maps.Point(0,0);
+        var anchor = new google.maps.Point(16,32);
+        var markerImage = new google.maps.MarkerImage(
+            iconUrl, size, origin, anchor);
 
-		try {
-			var marker = new google.maps.Marker({
-				map: map, 
-				position: position,
-				icon: markerImage, 
-				raiseOnDrag: false, draggable: true,
-				title: name,
-				hoststate: state,
-				hostname: name,
-				iw_content: content
-			});
-			
-			// Register Custom "dragend" Event
-			google.maps.event.addListener(marker, 'dragend', function() {
-				// Center the map at given point
-				map.panTo(marker.getPosition());
-			});
-		
-		} catch (e) {
-			console.error('markerCreate, exception : '+e.message);
-		}
-		
-		return marker;
-	}
+        try {
+            var markerOptions = {
+                map: map,
+                position: position,
+                icon: markerImage,
+                raiseOnDrag: false,
+                draggable: true,
+                title: name,
+                hoststate: state,
+                hostname: name,
+                iw_content: content
+            };
+            var marker = new google.maps.Marker(markerOptions);
+
+            // Register Custom "dragend" Event
+            google.maps.event.addListener(marker, 'dragend', function() {
+                // Center the map at given point
+                map.panTo(marker.getPosition());
+            });
+        } catch (e) {
+            console.error('markerCreate, exception : ' + e.message);
+        }
+
+        return marker;
+    };
 
 	//------------------------------------------------------------------------
 	// Map initialization
