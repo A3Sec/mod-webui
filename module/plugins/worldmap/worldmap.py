@@ -63,9 +63,11 @@ def checkauth():
 
 
 def _valid_coords(hostname, lat, lng):
-
-    COORD_MAX_LAT = 85
-    COORD_MIN_LAT = -85
+    # https://developers.google.com/maps/documentation/javascript/reference?csw=1#LatLng
+    # Latitude range = [-90, 90].
+    # Longitude range = [-180, 180]
+    COORD_MAX_LAT = 90
+    COORD_MIN_LAT = -90
     COORD_MAX_LNG = 180
     COORD_MIN_LNG = -180
 
