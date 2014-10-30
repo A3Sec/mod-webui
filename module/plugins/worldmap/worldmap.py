@@ -63,13 +63,12 @@ def checkauth():
 
 
 def _valid_coords(hostname, lat, lng):
+    # Bound limits according to Google documentation
     # https://developers.google.com/maps/documentation/javascript/reference?csw=1#LatLng
-    # Latitude range = [-90, 90].
-    # Longitude range = [-180, 180]
-    COORD_MAX_LAT = 90
-    COORD_MIN_LAT = -90
-    COORD_MAX_LNG = 180
-    COORD_MIN_LNG = -180
+    COORDS_LIMITS = {
+        "lat": {"max": 90, "min": -90,},
+        "lng": {"max": 180, "min": -180,},
+    }
 
     if not lat and not lng:
         return False
@@ -84,13 +83,11 @@ def _valid_coords(hostname, lat, lng):
         warning_msg = "[worldmap] Host {} has invalid coordinates"
         logger.warning(warning_msg.format(hostname))
         return False
-
-    if lat >= COORD_MAX_LAT or lat <= COORD_MIN_LAT:
+    if lat >= COORDS_LIMITS['lat']['max'] or lat <= COORDS_LIMITS['lat']['min']:
         warning_msg = "[worldmap] Host {} has a latitude out of range"
         logger.warning(warning_msg.format(hostname))
         return False
-
-    if lng >= COORD_MAX_LNG or lng <= COORD_MIN_LNG:
+    if lng >= COORDS_LIMITS['lng']['max'] or lng <= COORDS_LIMITS['lng']['min']:
         warning_msg = "[worldmap] Host {} has a longitude out of range"
         logger.warning(warning_msg.format(hostname))
         return False
@@ -174,7 +171,7 @@ def worldmap_widget():
 
     hosts = app.datamgr.get_hosts()
     valid_hosts = __get_valid_hosts(hosts)
-                
+
     return {
         'app': app,
         'user': user,
