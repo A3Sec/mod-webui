@@ -119,10 +119,22 @@ def __get_valid_hosts(hosts):
     return valid_hosts
 
 
+def __some_host_with_coordinates(hostgroup_list):
+    valid_hostgroup_list = []
+    for hostgroup in hostgroup_list:
+        host_list = hostgroup.get_hosts()
+        valid_host_list = __get_valid_hosts(host_list)
+        if valid_host_list:
+            valid_hostgroup_list.append(hostgroup)
+
+    return valid_hostgroup_list
+
+
 def __get_hostgroups():
     name_list = []
-    hostgroup_list = app.datamgr.get_hostgroups()
-    for hostgroup in hostgroup_list:
+    all_hostgroups = app.datamgr.get_hostgroups()
+    filtered_hostgroups = __some_host_with_coordinates(all_hostgroups)
+    for hostgroup in filtered_hostgroups:
         hostgroup_name = hostgroup.get_name()
         name_list.append(hostgroup_name)
     return name_list
