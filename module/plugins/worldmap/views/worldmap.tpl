@@ -10,7 +10,7 @@
     <div class="filters row">
         <div class="col-xs-2">
             <div class="form-group">
-                <label class="control-label">Hostgroups:</label>
+                <label class="control-label">Filter by hostgroup:</label>
                 <select class="form-control" name="filter"
                 onchange="location = this.options[this.selectedIndex].value">
                     <option value="/worldmap">All hostgroups</option>
