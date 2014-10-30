@@ -24,7 +24,7 @@ import os, sys
 from config_parser import config_parser
 from shinken.log import logger
 
-### Will be populated by the UI with it's own value
+# Will be populated by the UI with it's own value
 app = None
 
 # Get plugin's parameters from configuration file
@@ -96,21 +96,20 @@ def _valid_coords(hostname, lat, lng):
     return True
 
 
-def _get_coords(host):
+def __get_coords(host):
     lat = host.customs.get('_LOC_LAT', host.customs.get('_LAT'))
     lng = host.customs.get('_LOC_LNG', host.customs.get('_LONG'))
     if not params['only_geo_hosts']:
         lat = params['default_Lat'] if not lat else lat
         lng = params['default_Lng'] if not lng else lng
+
     return (lat, lng)
 
 
-# We are looking for hosts that got valid GPS coordinates,
-# and we just give them to the template to print them.
 def __get_valid_hosts(hosts):
     valid_hosts = []
     for h in hosts:
-        (_lat, _lng) = _get_coords(h)
+        (_lat, _lng) = __get_coords(h)
         if _valid_coords(h.get_name(), _lat, _lng):
             h.customs['_LOC_LAT'] = _lat
             h.customs['_LOC_LNG'] = _lng
@@ -207,7 +206,6 @@ widget_desc = '''<h4>Worldmap</h4>
 Show a map of all monitored hosts.
 '''
 
-# We export our properties to the webui
 pages = {
     get_page: {
         'routes': ['/worldmap'],
