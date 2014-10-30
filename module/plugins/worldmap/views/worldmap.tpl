@@ -11,11 +11,15 @@
         <div class="col-xs-2">
             <div class="form-group">
                 <label class="control-label">Hostgroups:</label>
-                <select class="form-control" name="filter" onchange="location = this.options[this.selectedIndex].value">
-                    <option>-----</option>
-                    <option value="/worldmap">No filter</option>
+                <select class="form-control" name="filter"
+                onchange="location = this.options[this.selectedIndex].value">
+                    <option value="/worldmap">All hostgroups</option>
                     %for name in hostgroups:
+                    %if selected_hostgroup == name:
+                    <option value="/worldmap/{{ name }}" selected="selected">{{ name }}</option>
+                    %else:
                     <option value="/worldmap/{{ name }}">{{ name }}</option>
+                    %end
                     %end
                 </select>
             </div>

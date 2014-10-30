@@ -146,7 +146,8 @@ def get_page():
         'user': user,
         'params': params,
         'hosts': valid_hosts,
-        'hostgroups': hostgroups
+        'hostgroups': hostgroups,
+        'selected_hostgroup': ''
     }
 
 
@@ -185,7 +186,8 @@ def filter_by_hostgroup(hostgroup_name):
         'user': user,
         'params': params,
         'hosts': hosts,
-        'hostgroups': hostgroups
+        'hostgroups': hostgroups,
+        'selected_hostgroup': hostgroup_name
     }
 
 
