@@ -19,8 +19,9 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Shinken.  If not, see <http://www.gnu.org/licenses/>.
 
-import time
+import time, unicodedata
 import os, sys
+from operator import itemgetter
 from config_parser import config_parser
 from shinken.log import logger
 
@@ -128,6 +129,28 @@ def __some_host_with_coordinates(hostgroup_list):
     return valid_hostgroup_list
 
 
+def __sort_unicode_list(unicode_list):
+    counter = 0
+    unsorted_dict_list = []
+
+    for value in unicode_list:
+        ascii_value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore')
+        unsorted_dict_list.append({'index': counter, 'value': ascii_value})
+        counter += 1
+
+    sorted_dict_list = sorted(unsorted_dict_list, key=itemgetter('value'))
+
+    index_list = []
+    for ascii_item in sorted_dict_list:
+        index_list.append(ascii_item['index'])
+
+    sorted_unicode_list = []
+    for i in index_list:
+        sorted_unicode_list.append(unicode_list[i])
+
+    return sorted_unicode_list
+
+
 def __get_hostgroups():
     name_list = []
     all_hostgroups = app.datamgr.get_hostgroups()
@@ -137,7 +160,9 @@ def __get_hostgroups():
         hostgroup_name = hostgroup.get_name()
         name_list.append(hostgroup_name)
 
-    return name_list
+    sorted_list = __sort_unicode_list(name_list)
+
+    return sorted_list
 
 
 def __get_hosts_by_hostgroup(hostgroup_name):
