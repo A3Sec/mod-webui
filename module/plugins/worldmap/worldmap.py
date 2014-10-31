@@ -19,8 +19,9 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Shinken.  If not, see <http://www.gnu.org/licenses/>.
 
-import time
+import time, unicodedata
 import os, sys
+from operator import itemgetter
 from config_parser import config_parser
 from shinken.log import logger
 
@@ -63,13 +64,12 @@ def checkauth():
 
 
 def _valid_coords(hostname, lat, lng):
+    # Bound limits according to Google documentation
     # https://developers.google.com/maps/documentation/javascript/reference?csw=1#LatLng
-    # Latitude range = [-90, 90].
-    # Longitude range = [-180, 180]
-    COORD_MAX_LAT = 90
-    COORD_MIN_LAT = -90
-    COORD_MAX_LNG = 180
-    COORD_MIN_LNG = -180
+    COORDS_LIMITS = {
+        "lat": {"max": 90, "min": -90,},
+        "lng": {"max": 180, "min": -180,},
+    }
 
     if not lat and not lng:
         return False
@@ -84,13 +84,11 @@ def _valid_coords(hostname, lat, lng):
         warning_msg = "[worldmap] Host {} has invalid coordinates"
         logger.warning(warning_msg.format(hostname))
         return False
-
-    if lat >= COORD_MAX_LAT or lat <= COORD_MIN_LAT:
+    if lat >= COORDS_LIMITS['lat']['max'] or lat <= COORDS_LIMITS['lat']['min']:
         warning_msg = "[worldmap] Host {} has a latitude out of range"
         logger.warning(warning_msg.format(hostname))
         return False
-
-    if lng >= COORD_MAX_LNG or lng <= COORD_MIN_LNG:
+    if lng >= COORDS_LIMITS['lng']['max'] or lng <= COORDS_LIMITS['lng']['min']:
         warning_msg = "[worldmap] Host {} has a longitude out of range"
         logger.warning(warning_msg.format(hostname))
         return False
@@ -131,14 +129,40 @@ def __some_host_with_coordinates(hostgroup_list):
     return valid_hostgroup_list
 
 
+def __sort_unicode_list(unicode_list):
+    counter = 0
+    unsorted_dict_list = []
+
+    for value in unicode_list:
+        ascii_value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore')
+        unsorted_dict_list.append({'index': counter, 'value': ascii_value})
+        counter += 1
+
+    sorted_dict_list = sorted(unsorted_dict_list, key=itemgetter('value'))
+
+    index_list = []
+    for ascii_item in sorted_dict_list:
+        index_list.append(ascii_item['index'])
+
+    sorted_unicode_list = []
+    for i in index_list:
+        sorted_unicode_list.append(unicode_list[i])
+
+    return sorted_unicode_list
+
+
 def __get_hostgroups():
     name_list = []
     all_hostgroups = app.datamgr.get_hostgroups()
     filtered_hostgroups = __some_host_with_coordinates(all_hostgroups)
+
     for hostgroup in filtered_hostgroups:
         hostgroup_name = hostgroup.get_name()
         name_list.append(hostgroup_name)
-    return name_list
+
+    sorted_list = __sort_unicode_list(name_list)
+
+    return sorted_list
 
 
 def __get_hosts_by_hostgroup(hostgroup_name):
@@ -174,7 +198,7 @@ def worldmap_widget():
 
     hosts = app.datamgr.get_hosts()
     valid_hosts = __get_valid_hosts(hosts)
-                
+
     return {
         'app': app,
         'user': user,
