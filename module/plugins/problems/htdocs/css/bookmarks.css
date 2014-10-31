@@ -3,5 +3,11 @@
 }
 
 .unstyled .close {
-    font-size: 17px;
+    float: none;
+    position: absolute;
+    right: 0;
+}
+
+.unstyled .close.plus {
+    right: 15px;
 }

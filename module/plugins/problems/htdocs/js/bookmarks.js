@@ -83,7 +83,7 @@ function refresh_bookmarks(){
         c = '<span><a href="javascript:'+fun+'" class="close">&times;</a></span>';
         if (advfct == 1) {
                 fun2 = "push_to_common_bookmarks('"+b.name+"','"+b.uri+"');";
-                c2 = '<span><a href="javascript:'+fun2+'" class="close">&plus;</a></span>';
+                c2 = '<span><a href="javascript:'+fun2+'" class="close plus">&plus;</a></span>';
         }
         else { c2 =""; }
 
