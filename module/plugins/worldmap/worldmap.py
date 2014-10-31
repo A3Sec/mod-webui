@@ -42,7 +42,7 @@ try:
     params['default_Lat'] = float(params['default_Lat'])
     params['default_Lng'] = float(params['default_Lng'])
     params['default_zoom'] = int(params['default_zoom'])
-    
+
     logger.debug("WebUI plugin '%s', configuration loaded." % (plugin_name))
     debug_msg = "Plugin configuration, default position: %s / %s"
     logger.debug(debug_msg % (params['default_Lat'], params['default_Lng']))
@@ -132,9 +132,11 @@ def __get_hostgroups():
     name_list = []
     all_hostgroups = app.datamgr.get_hostgroups()
     filtered_hostgroups = __some_host_with_coordinates(all_hostgroups)
+
     for hostgroup in filtered_hostgroups:
         hostgroup_name = hostgroup.get_name()
         name_list.append(hostgroup_name)
+
     return name_list
 
 
@@ -162,7 +164,7 @@ def get_page():
 
 
 def worldmap_widget():
-    user = checkauth()    
+    user = checkauth()
 
     wid = app.request.GET.get('wid', 'widget_system_' + str(int(time.time())))
     collapsed = (app.request.GET.get('collapsed', 'False') == 'True')
