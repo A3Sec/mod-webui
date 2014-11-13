@@ -1,0 +1,13 @@
+.unstyled {
+    list-style: none;
+}
+
+.unstyled .close {
+    float: none;
+    position: absolute;
+    right: 0;
+}
+
+.unstyled .close.plus {
+    right: 15px;
+}
